@@ -1,0 +1,449 @@
+{
+  "schemaVersion": "hyperreview-result/v0",
+  "artifactHeader": {
+    "artifactKind": "hyperreview-result",
+    "artifactContract": "hyperreview-result/v0",
+    "hyperreviewVersion": "0.21.0",
+    "hyperreviewBuild": "installed-copy-0.21.0",
+    "hyperreviewSource": {
+      "repo": "https://github.com/PsiClawOps/hyperreview-local",
+      "commit": "unknown-installed-copy",
+      "skill": "hyperreview-patch"
+    },
+    "emitter": "codex-agent (self-review, implementing agent)",
+    "emittedAt": "2026-08-13T14:20:00Z",
+    "validationProfile": "strict"
+  },
+  "mode": "patch-review",
+  "target": "/srv/codex/repo/thermalith (branch feat/ble-transport-macos, dirty worktree vs upstream/main)",
+  "targetType": "diff",
+  "scope": "macOS BLE transport for Niimbot.Net (upstream issue #13): src/Niimbot.Net/Transport/{MacBleTransport.cs,AsyncByteQueue.cs,MacOS/ObjC.cs,MacOS/CoreBluetoothDelegate.cs}, Client/NiimbotClient.cs (FromBleDevice), Niimbot.Net.csproj, tools/print-harness/Program.cs, tests/Niimbot.Net.Tests/AsyncByteQueueTests.cs",
+  "verdict": "WARN",
+  "evidenceSources": [
+    {
+      "id": "E1",
+      "kind": "diff",
+      "description": "git diff upstream/main: 7 files, ~1150 hand-authored source+test lines",
+      "refs": [
+        {
+          "kind": "path",
+          "ref": "/srv/codex/repo/thermalith"
+        }
+      ]
+    },
+    {
+      "id": "E2",
+      "kind": "file",
+      "description": "INiimbotTransport contract (spec 5.1) and SerialTransport reference semantics, read in full",
+      "refs": [
+        {
+          "kind": "path",
+          "ref": "src/Niimbot.Net/INiimbotTransport.cs"
+        },
+        {
+          "kind": "path",
+          "ref": "src/Niimbot.Net/Transport/SerialTransport.cs"
+        }
+      ]
+    },
+    {
+      "id": "E3",
+      "kind": "file",
+      "description": "PacketAccumulator reassembly contract (fragmentation handled above the transport)",
+      "refs": [
+        {
+          "kind": "path",
+          "ref": "src/Niimbot.Net/Framing/PacketAccumulator.cs"
+        }
+      ]
+    },
+    {
+      "id": "E4",
+      "kind": "test",
+      "description": "dotnet test tests/Niimbot.Net.Tests: 52/52 green incl. 8 new AsyncByteQueueTests",
+      "refs": [
+        {
+          "kind": "command",
+          "ref": "dotnet test tests/Niimbot.Net.Tests/Niimbot.Net.Tests.csproj"
+        }
+      ]
+    },
+    {
+      "id": "E5",
+      "kind": "test",
+      "description": "Full suite: 26 Thermalith.Core failures traced to missing libSkiaSharp.so native dep on this Linux container (untouched surface, pre-existing)",
+      "refs": [
+        {
+          "kind": "command",
+          "ref": "dotnet test"
+        }
+      ]
+    },
+    {
+      "id": "E6",
+      "kind": "doc",
+      "description": "Upstream issue #13 spec: GATT UUIDs, notify/write-no-response, fragmentation requirement, macOS connect-by-name quirk",
+      "refs": [
+        {
+          "kind": "url",
+          "ref": "https://github.com/EvilGeniusLabs-ca/Thermalith/issues/13"
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "scopeReviewed": [
+      "All 7 changed files read in full",
+      "Transport contract + reference transport + framing layer read in full",
+      "Niimbot.Net test suite executed"
+    ],
+    "scopeNotReviewed": [
+      "Runtime behavior on actual macOS (no mac host here)",
+      "Thermalith.App UI integration (not in this diff)",
+      "Hardware interaction with a physical printer"
+    ],
+    "coverageLevel": "complete-for-scope",
+    "limitations": [
+      "ObjC interop correctness is source-verified against documented semantics only; executable verification requires the planned B1 Pro hardware pass (work map ragesaq-004)."
+    ]
+  },
+  "confidence": {
+    "level": "high",
+    "anchor": 75,
+    "rationale": "OS-independent logic verified by executed tests (anchor 75); interop findings grounded in documented ObjC/CoreBluetooth semantics with sibling-path sampling (ScanAsync vs CleanupAsync); residual uncertainty is macOS runtime behavior, explicitly gated on hardware verification."
+  },
+  "analysisPackage": [
+    "changed-surface: enumerated all 7 files; no unrelated churn",
+    "contract-correctness: MacBleTransport preserves INiimbotTransport semantics (state events, 0-on-idle reads, throw-on-disconnected writes) verified against SerialTransport reference",
+    "test-evidence: 8 new tests cover the OS-independent read path incl. wiki fragmentation example through the real PacketAccumulator",
+    "boundary-threat: new wireless input path; payloads copied with exact bounds, parsed only by hardened accumulator",
+    "operational-impact: Info.plist NSBluetoothAlwaysUsageDescription needed before app-level BLE ships (follow-up PR)",
+    "judge: verdict WARN with three fixable findings; reasoning gate applied (symptom/candidates/falsifier per finding)"
+  ],
+  "passesRun": [
+    "changed-surface",
+    "contract-correctness",
+    "test-evidence",
+    "boundary-threat",
+    "operational-impact",
+    "judge"
+  ],
+  "conditionalPassesSkipped": [
+    {
+      "id": "authority-provenance",
+      "reason": "No identity, credential, or authority surface in the diff",
+      "evidence": "Diff touches only transport/interop/tests/harness; no auth code paths exist in Niimbot.Net"
+    },
+    {
+      "id": "migration-safety",
+      "reason": "No schema, storage, or data migration touched",
+      "evidence": "No persisted formats changed; printers.json untouched"
+    },
+    {
+      "id": "code-map-evidence",
+      "reason": "No code-map artifacts exist in this repository",
+      "evidence": "rg found no clawmap/code-map files in repo"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "title": "Autoreleased NSData leaks per BLE write chunk on managed threads",
+      "severity": "high",
+      "confidence": {
+        "level": "high",
+        "anchor": 50,
+        "rationale": "Traced the write path in source; Apple documents convenience constructors as autoreleasing; .NET threads provably lack autorelease pools. Not executed on hardware (no mac host)."
+      },
+      "symptom": "WriteAsync creates one NSData per chunk via dataWithBytes:length: (autoreleasing) on a .NET thread with no autorelease pool",
+      "source": "src/Niimbot.Net/Transport/MacBleTransport.cs WriteAsync chunk loop: `var nsData = ObjC.MsgSend(ObjC.objc_getClass(\"NSData\"), ObjC.Sel.DataWithBytesLength, (IntPtr)bytes, (nuint)chunk.Length);`",
+      "consequence": "A print job pushes tens of KB in 20-512 byte chunks: hundreds of leaked NSData objects per label on the golden print path; unbounded growth across a print session",
+      "remedy": "Use alloc + initWithBytes:length: (owned reference) and objc_release after writeValue; audit all convenience-constructor uses on managed threads",
+      "verification": "Falsifier: run a print on macOS under Instruments/leaks and observe NSData count stable across labels after the fix",
+      "evidenceRefs": [
+        "E1",
+        "E2"
+      ]
+    },
+    {
+      "id": "F2",
+      "title": "Delegate released while CoreBluetooth can still dispatch to it (use-after-free)",
+      "severity": "high",
+      "confidence": {
+        "level": "high",
+        "anchor": 50,
+        "rationale": "Traced both cleanup paths in source; CBCentralManager/CBPeripheral delegates are weak per Apple docs, so our alloc is the sole strong ref; sibling path (ScanAsync finally) shares the mechanism."
+      },
+      "symptom": "CleanupAsync releases the delegate without first detaching it from central/peripheral; ScanAsync finally block likewise destroys the delegate right after stopScan",
+      "source": "src/Niimbot.Net/Transport/MacBleTransport.cs CleanupAsync: `ReleaseHandle(ref _central); if (_delegate != IntPtr.Zero) { CoreBluetoothDelegate.Destroy(_delegate);`",
+      "consequence": "A callback already queued on the GCD queue is delivered to a deallocated ObjC object: native crash of the host app (managed-side Owners map cannot protect the ObjC receiver)",
+      "remedy": "setDelegate:nil on peripheral and central after cancel/stop, then release the delegate; mirror the order in ScanAsync",
+      "verification": "Falsifier: on macOS, connect/disconnect in a tight loop with notifications flowing; no crash after fix, crash reproducible before fix under ASan",
+      "evidenceRefs": [
+        "E1"
+      ]
+    },
+    {
+      "id": "F3",
+      "title": "Managed exception escaping [UnmanagedCallersOnly] callbacks crashes the process",
+      "severity": "medium",
+      "confidence": {
+        "level": "high",
+        "anchor": 50,
+        "rationale": "Runtime fail-fast for managed exceptions crossing UnmanagedCallersOnly frames is documented .NET behavior; callback bodies allocate, lock, and log, all of which can throw."
+      },
+      "symptom": "All ten delegate IMPs route into owner logic (list ops, objc_retain, tracing) with no try/catch at the native boundary",
+      "source": "src/Niimbot.Net/Transport/MacOS/CoreBluetoothDelegate.cs: `private static void DidDiscover(IntPtr self, IntPtr sel, ...) => Owner(self)?.OnPeripheralDiscovered(peripheral);`",
+      "consequence": "Any managed throw inside a CoreBluetooth callback terminates the whole host application rather than failing one connect",
+      "remedy": "Wrap each routed callback body in try/catch; route failures to Fail()/NiimbotTrace, never across the native boundary",
+      "verification": "Falsifier: inject a throwing owner callback in a mac test harness; process survives and the connect fails gracefully after the fix",
+      "evidenceRefs": [
+        "E1"
+      ]
+    }
+  ],
+  "rejectedFindings": [
+    {
+      "id": "R1",
+      "title": "_central field read race in discovery callback",
+      "severity": "info",
+      "confidence": {
+        "level": "high",
+        "anchor": 50,
+        "rationale": "Traced ordering in source: scan starts only from the state callback, which itself uses the passed central pointer."
+      },
+      "symptom": "Discovery callback reads _central for stopScan/connect",
+      "source": "src/Niimbot.Net/Transport/MacBleTransport.cs OnPeripheralDiscovered",
+      "consequence": "None in practice: field assignment completes before any scan starts; discovery arrives milliseconds later",
+      "remedy": "No change required",
+      "verification": "Ordering argument recorded; would only matter if scan started before init returned, which CoreBluetooth does not do",
+      "evidenceRefs": [
+        "E1"
+      ]
+    },
+    {
+      "id": "R2",
+      "title": "setNotifyValue: overload ambiguity (int literal to sbyte vs nint)",
+      "severity": "info",
+      "confidence": {
+        "level": "high",
+        "anchor": 75,
+        "rationale": "Build compiles green; ABI analysis shows identical register usage at this arity either way."
+      },
+      "symptom": "Int literals 0/1 passed where sbyte and IntPtr overloads both exist",
+      "source": "src/Niimbot.Net/Transport/MacBleTransport.cs SetNotifyValue call sites",
+      "consequence": "None: BOOL reads the low byte of the same argument register regardless of chosen overload",
+      "remedy": "No change required",
+      "verification": "Verified by successful compile + arm64/x64 calling convention analysis",
+      "evidenceRefs": [
+        "E1",
+        "E4"
+      ]
+    },
+    {
+      "id": "R3",
+      "title": "Duplicate ObjC class-name registration across AssemblyLoadContexts",
+      "severity": "low",
+      "confidence": {
+        "level": "medium",
+        "anchor": 25,
+        "rationale": "Pattern-match on objc_allocateClassPair semantics; double-load scenario not sampled."
+      },
+      "symptom": "objc_allocateClassPair returns null for a duplicate name; code throws",
+      "source": "src/Niimbot.Net/Transport/MacOS/CoreBluetoothDelegate.cs EnsureClassRegistered",
+      "consequence": "Exotic plugin/double-load scenarios fail loudly at first connect with a clear exception, not silently",
+      "remedy": "Accept: loud failure is adequate for this edge",
+      "verification": "Would need a two-ALC repro to justify complexity of a randomized class name",
+      "evidenceRefs": [
+        "E1"
+      ]
+    },
+    {
+      "id": "R4",
+      "title": "AsyncByteQueue spurious 0-return under reader/writer race",
+      "severity": "info",
+      "confidence": {
+        "level": "high",
+        "anchor": 75,
+        "rationale": "Executed the cross-thread stream test (16 KiB, unaligned chunks) which exercises the race window."
+      },
+      "symptom": "Semaphore rebalance can consume a count belonging to an in-flight writer",
+      "source": "src/Niimbot.Net/Transport/AsyncByteQueue.cs RebalanceLocked",
+      "consequence": "A mid-stream 0 return, which the transport read contract explicitly allows (0 = idle; client pump re-polls)",
+      "remedy": "No change required",
+      "verification": "Covered by Writer_thread_and_reader_thread_transfer_a_large_stream_intact",
+      "evidenceRefs": [
+        "E4"
+      ]
+    }
+  ],
+  "findingLedger": [
+    {
+      "id": "F1",
+      "disposition": "accepted",
+      "severity": "high"
+    },
+    {
+      "id": "F2",
+      "disposition": "accepted",
+      "severity": "high"
+    },
+    {
+      "id": "F3",
+      "disposition": "accepted",
+      "severity": "medium"
+    },
+    {
+      "id": "R1",
+      "disposition": "rejected",
+      "reason": "ordering argument holds"
+    },
+    {
+      "id": "R2",
+      "disposition": "rejected",
+      "reason": "ABI-identical"
+    },
+    {
+      "id": "R3",
+      "disposition": "rejected",
+      "reason": "loud failure adequate for exotic edge"
+    },
+    {
+      "id": "R4",
+      "disposition": "rejected",
+      "reason": "within read contract, test-covered"
+    },
+    {
+      "id": "OP1",
+      "disposition": "noted-followup",
+      "reason": "Info.plist NSBluetoothAlwaysUsageDescription required before app-level BLE ships; operational follow-up for the app-integration PR, not a defect in this library-scoped diff"
+    }
+  ],
+  "cleanResult": {
+    "status": "has-findings",
+    "statement": "Three accepted findings (two high interop-hygiene defects, one medium crash-safety gap); transport contract itself is preserved and the OS-independent path is test-verified.",
+    "scopeChecked": [
+      "transport contract semantics",
+      "framing/fragmentation",
+      "memory management",
+      "callback safety",
+      "test coverage",
+      "packaging impact"
+    ]
+  },
+  "reportQuality": {
+    "status": "passed",
+    "checks": [
+      "findings quote the flagged code",
+      "governing contract cited (INiimbotTransport spec 5.1, D-004/D-005)",
+      "reasoning gate applied with falsifiers per finding",
+      "test gap recorded with reason",
+      "sibling paths sampled for F2"
+    ]
+  },
+  "nextAction": "fix-now",
+  "gateMode": "advisory",
+  "blocksStage": false,
+  "activationPlan": {
+    "requestedWorkShapes": [
+      "dirty-worktree patch review of new BLE transport"
+    ],
+    "normalizedWorkShapes": [
+      "diff review, patch-review mode, Full tier"
+    ],
+    "normalizationActions": [
+      {
+        "action": "tier-escalation",
+        "reason": "reviewable churn ~1150 lines > 500 threshold; two high findings"
+      }
+    ],
+    "activatedPasses": [
+      {
+        "id": "changed-surface",
+        "reason": "required",
+        "sourceSignal": "contract",
+        "mandatory": true
+      },
+      {
+        "id": "contract-correctness",
+        "reason": "required",
+        "sourceSignal": "contract",
+        "mandatory": true
+      },
+      {
+        "id": "test-evidence",
+        "reason": "required",
+        "sourceSignal": "contract",
+        "mandatory": true
+      },
+      {
+        "id": "judge",
+        "reason": "required",
+        "sourceSignal": "contract",
+        "mandatory": true
+      },
+      {
+        "id": "boundary-threat",
+        "reason": "diff adds a new wireless input path",
+        "sourceSignal": "diff content",
+        "mandatory": false
+      },
+      {
+        "id": "operational-impact",
+        "reason": "packaging/permission requirements for macOS BLE",
+        "sourceSignal": "diff content",
+        "mandatory": false
+      }
+    ],
+    "skippedConditionalPasses": [
+      {
+        "id": "authority-provenance",
+        "reason": "no identity/authority surface",
+        "evidence": "diff scope"
+      },
+      {
+        "id": "migration-safety",
+        "reason": "no data/schema migration",
+        "evidence": "diff scope"
+      },
+      {
+        "id": "code-map-evidence",
+        "reason": "no code-map artifacts in repo",
+        "evidence": "rg search"
+      }
+    ],
+    "selectedDepth": "standard",
+    "depthPromotionReason": "Full tier by blast radius (trigger 5) and high findings (trigger 1)",
+    "requiredEvidence": [
+      "changed files",
+      "diff hunks",
+      "nearby code",
+      "tests or reason absent",
+      "public behavior touched"
+    ],
+    "codeAnalysisRequirements": {
+      "status": "not-required",
+      "artifactRefs": []
+    },
+    "requestDisposition": "continue",
+    "expectedFollowupMode": "patch-review"
+  },
+  "activeDecisionContractsChecked": [
+    "D-004 transport-only addition behind INiimbotTransport",
+    "D-005 per-OS transports, macOS-first pure-C# CoreBluetooth interop"
+  ],
+  "lifecyclePromotionCandidates": [
+    {
+      "id": "LPC-1",
+      "sourceFindingId": "F1",
+      "summary": "ObjC-interop hygiene checklist for this repo: no convenience constructors on managed threads without explicit ownership (alloc/init + release), setDelegate:nil before releasing delegate objects, try/catch inside every UnmanagedCallersOnly IMP (covers F1, F2, F3).",
+      "severity": "high",
+      "preventionTarget": "validator-rule",
+      "status": "candidate",
+      "evidenceRefs": [
+        "E1"
+      ]
+    }
+  ],
+  "decisionDeltaCandidates": []
+}

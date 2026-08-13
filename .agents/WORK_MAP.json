@@ -61,12 +61,12 @@
       "id": "ragesaq-004",
       "title": "Implement BleTransport behind INiimbotTransport in Niimbot.Net",
       "owner": "ragesaq",
-      "status": "active",
+      "status": "review",
       "needs": [
         "ragesaq-002",
         "ragesaq-003"
       ],
-      "next": "Branch from upstream/main. Target hardware: ragesaq's B1 Pro (id 4097, 300 dpi, 567 px, B1 series - confirm which print task id 4097 maps to; 300 dpi path proven by D11_H). Per D-005: MacBleTransport in Niimbot.Net, pure-C# CoreBluetooth interop (libobjc P/Invoke, runtime delegate classes via objc_allocateClassPair + [UnmanagedCallersOnly], libdispatch serial queue), guarded by OperatingSystem.IsMacOS(). GATT: service e7810a71-73ae-499d-8c15-faa9aef0c3f2 / characteristic bef8d6c9-9c21-4c9e-b632-bd58c1009f9f, fallback: long-UUID service with NOTIFY + WRITE_NO_RESPONSE. Subscribe notifications, write-without-response, reassemble 55 55 ... AA AA frames across notifications. macOS quirk: connect by device name; app needs NSBluetoothAlwaysUsageDescription in Info.plist (Pack-MacApp.sh). Unit-test frame reassembly with a replay transport. Dev loop: ragesaq's Mac + B1 Pro is the test rig; hardware verification doubles as the catalogue verification report for the B1 Pro.",
+      "next": "Code COMPLETE on branch feat/ble-transport-macos (pushed, head d976041): MacBleTransport (CoreBluetooth via pure-C# ObjC interop), AsyncByteQueue, delegate bridge, NiimbotClient.FromBleDevice, print-harness scan/--ble. 52/52 tests green. HyperReview patch-review (Full tier): WARN with 3 findings (NSData autorelease leak, delegate use-after-free, callback crash-safety) \u2014 all FIXED in-loop; artifacts in .hyperreview/patch-review-2026-08-13T14-20-00Z/ on main. REMAINING: on-hardware verification on ragesaq's Mac + B1 Pro. A self-contained osx-arm64 harness binary is built at /tmp/print-harness-osx-arm64/print-harness on the codex server (rebuild with: dotnet publish tools/print-harness/print-harness.csproj -c Release -r osx-arm64 --self-contained -p:PublishSingleFile=true). Steps on the Mac: 1) copy binary over (scp keeps it unquarantined), chmod +x. 2) printer ON. 3) ./print-harness scan  -> expect 'B1 Pro-XXXXXX'. 4) ./print-harness info --ble 'B1 Pro' -> expect model id 4097, 300 dpi. 5) ./print-harness test-page --ble 'B1 Pro' (uses a label). 6) ./print-harness print --ble 'B1 Pro' --log ble-capture.log and keep the log for the PR. If macOS Bluetooth permission blocks the terminal, approve it in System Settings -> Privacy & Security -> Bluetooth. Findings go here; on success flip to done + ledger, then ragesaq-005 (upstream PR incl. B1 Pro catalogue verification report).",
       "links": [
         "src/Niimbot.Net/INiimbotTransport.cs",
         "Documentation/thermalith-build-spec.md"
