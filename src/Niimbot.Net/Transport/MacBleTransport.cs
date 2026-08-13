@@ -53,6 +53,7 @@ public sealed class MacBleTransport : INiimbotTransport, CoreBluetoothDelegate.I
     private volatile bool _connected;
 
     /// <summary>Whether this transport can run on the current OS.</summary>
+    [System.Runtime.Versioning.SupportedOSPlatformGuard("macos")]
     public static bool IsSupported => OperatingSystem.IsMacOS();
 
     /// <param name="deviceName">
