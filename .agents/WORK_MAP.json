@@ -48,9 +48,9 @@
       "id": "ragesaq-003",
       "title": "Choose the .NET cross-platform BLE stack (issue #13's 'one real open decision')",
       "owner": "ragesaq",
-      "status": "active",
+      "status": "review",
       "needs": [],
-      "next": "Survey candidates from issue #13. Health check 2026-08-13: inthehand/32feet (InTheHand.BluetoothLE) MIT, ~986 stars, pushed 2026-08-10; dotnet-bluetooth-le (Plugin.BLE) Apache-2.0, ~950 stars, pushed 2026-05. Both GPL-compatible. Still to do: confirm real desktop support per OS (WinRT / CoreBluetooth / BlueZ D-Bus coverage), notify + write-without-response support, and headless friendliness. NEEDED FROM ragesaq: which desktop OS(es) he runs Thermalith on - that sets the first target platform. Then write the comparison + proposed pick into DECISIONS.json before coding.",
+      "next": "Survey DONE, decision PROPOSED as D-005 (per-OS transports; macOS-first via pure-C# CoreBluetooth ObjC interop). Evidence: InTheHand.BluetoothLE 4.0.44 + Plugin.BLE 3.2.1 nupkg TFM lists show maccatalyst-only mac support; SimpleBLE license is GPL-incompatible now. Awaiting ragesaq acceptance; on accept flip D-005 to accepted, this node to done + ledger line, and consider posting the findings as a comment on upstream issue #13 to get maintainer buy-in before the PR.",
       "links": [
         "https://github.com/MultiMote/niimblue-node",
         "https://github.com/MultiMote/niimbluelib"
@@ -66,7 +66,7 @@
         "ragesaq-002",
         "ragesaq-003"
       ],
-      "next": "Branch from upstream/main. Target hardware: ragesaq's B1 Pro (id 4097, 300 dpi, 567 px, B1 series - confirm which print task id 4097 maps to; 300 dpi path was proven by D11_H). New transport: GATT discovery (service e7810a71-73ae-499d-8c15-faa9aef0c3f2 / characteristic bef8d6c9-9c21-4c9e-b632-bd58c1009f9f, fallback rule: long-UUID service with NOTIFY + WRITE_NO_RESPONSE characteristic), subscribe notifications, write-without-response, reassemble 55 55 ... AA AA frames fragmented across notifications. macOS quirk: connect by device name. Unit-test fragment reassembly with a replay transport. Hardware verification on the B1 Pro doubles as the catalogue verification report (model-id + dpi + head px reconcile), worth noting in the PR.",
+      "next": "Branch from upstream/main. Target hardware: ragesaq's B1 Pro (id 4097, 300 dpi, 567 px, B1 series - confirm which print task id 4097 maps to; 300 dpi path proven by D11_H). Per D-005: MacBleTransport in Niimbot.Net, pure-C# CoreBluetooth interop (libobjc P/Invoke, runtime delegate classes via objc_allocateClassPair + [UnmanagedCallersOnly], libdispatch serial queue), guarded by OperatingSystem.IsMacOS(). GATT: service e7810a71-73ae-499d-8c15-faa9aef0c3f2 / characteristic bef8d6c9-9c21-4c9e-b632-bd58c1009f9f, fallback: long-UUID service with NOTIFY + WRITE_NO_RESPONSE. Subscribe notifications, write-without-response, reassemble 55 55 ... AA AA frames across notifications. macOS quirk: connect by device name; app needs NSBluetoothAlwaysUsageDescription in Info.plist (Pack-MacApp.sh). Unit-test frame reassembly with a replay transport. Dev loop: ragesaq's Mac + B1 Pro is the test rig; hardware verification doubles as the catalogue verification report for the B1 Pro.",
       "links": [
         "src/Niimbot.Net/INiimbotTransport.cs",
         "Documentation/thermalith-build-spec.md"
