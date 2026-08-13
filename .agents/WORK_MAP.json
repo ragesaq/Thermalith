@@ -35,9 +35,9 @@
       "id": "ragesaq-002",
       "title": "Identify ragesaq's printer model and confirm its wireless channel (BLE vs classic-BT SPP)",
       "owner": "ragesaq",
-      "status": "active",
+      "status": "done",
       "needs": [],
-      "next": "Ask ragesaq for the printer model (or read it off the device / vendor app). Then check it against issue #13's framing: newer models are BLE-only (SPP port present but silent \u2014 B3S confirmed case). If the model speaks classic SPP, wireless printing may already work via the existing SerialTransport over an OS rfcomm/serial binding \u2014 test that first with tools/print-harness before writing any code. Record model, channel findings, and probe output here.",
+      "next": "Done. Printer is a NIIMBOT B1 Pro: catalogue id 4097, 300 dpi, 48 mm printable, 567 px head, B1 series, unverified in Thermalith's catalogue (a hardware verification report is a bonus contribution). Wireless channel = BLE: the B1 Pro's MCU is a SiFli SF32 (modern BLE SoC, per community wiki hardware page) and niimblue drives id 4097 over Web Bluetooth. Consistent with issue #13: newer models are BLE-first. Final on-hardware confirmation (GATT service e7810a71-... visible, SPP absent/silent) folds into ragesaq-004 hardware verification.",
       "links": [
         "https://github.com/EvilGeniusLabs-ca/Thermalith/issues/13",
         "tools/print-harness"
@@ -48,9 +48,9 @@
       "id": "ragesaq-003",
       "title": "Choose the .NET cross-platform BLE stack (issue #13's 'one real open decision')",
       "owner": "ragesaq",
-      "status": "idea",
+      "status": "active",
       "needs": [],
-      "next": "Survey candidates named in issue #13: per-OS native (WinRT / CoreBluetooth / BlueZ D-Bus), InTheHand.BluetoothLE, Plugin.BLE. Evaluate: desktop support on Win/macOS/Linux, GPL compatibility, maintenance health, headless friendliness. Study niimblue-node's BLE handling (notify/write + frame reassembly) as the byte-accurate reference. Write the comparison into DECISIONS.json as a proposed decision before coding.",
+      "next": "Survey candidates from issue #13. Health check 2026-08-13: inthehand/32feet (InTheHand.BluetoothLE) MIT, ~986 stars, pushed 2026-08-10; dotnet-bluetooth-le (Plugin.BLE) Apache-2.0, ~950 stars, pushed 2026-05. Both GPL-compatible. Still to do: confirm real desktop support per OS (WinRT / CoreBluetooth / BlueZ D-Bus coverage), notify + write-without-response support, and headless friendliness. NEEDED FROM ragesaq: which desktop OS(es) he runs Thermalith on - that sets the first target platform. Then write the comparison + proposed pick into DECISIONS.json before coding.",
       "links": [
         "https://github.com/MultiMote/niimblue-node",
         "https://github.com/MultiMote/niimbluelib"
@@ -66,7 +66,7 @@
         "ragesaq-002",
         "ragesaq-003"
       ],
-      "next": "Branch from upstream/main. New transport: GATT discovery (service e7810a71-73ae-499d-8c15-faa9aef0c3f2 / characteristic bef8d6c9-9c21-4c9e-b632-bd58c1009f9f, fallback discovery rule: long-UUID service with NOTIFY + WRITE_NO_RESPONSE characteristic), subscribe notifications, write-without-response, reassemble 55 55 ... AA AA frames fragmented across notifications (buffer in transport). macOS quirk: connect by device name. Unit-test fragmentation reassembly with a replay transport. Verify on real hardware via print-harness, then full app print path.",
+      "next": "Branch from upstream/main. Target hardware: ragesaq's B1 Pro (id 4097, 300 dpi, 567 px, B1 series - confirm which print task id 4097 maps to; 300 dpi path was proven by D11_H). New transport: GATT discovery (service e7810a71-73ae-499d-8c15-faa9aef0c3f2 / characteristic bef8d6c9-9c21-4c9e-b632-bd58c1009f9f, fallback rule: long-UUID service with NOTIFY + WRITE_NO_RESPONSE characteristic), subscribe notifications, write-without-response, reassemble 55 55 ... AA AA frames fragmented across notifications. macOS quirk: connect by device name. Unit-test fragment reassembly with a replay transport. Hardware verification on the B1 Pro doubles as the catalogue verification report (model-id + dpi + head px reconcile), worth noting in the PR.",
       "links": [
         "src/Niimbot.Net/INiimbotTransport.cs",
         "Documentation/thermalith-build-spec.md"
