@@ -50,6 +50,16 @@ public sealed class NiimbotClient : IAsyncDisposable
     public static NiimbotClient FromSerialPort(string portName) =>
         new(new Transport.SerialTransport(portName), ownsTransport: true);
 
+    /// <summary>
+    /// Convenience factory for BLE on macOS: build a <see cref="Transport.MacBleTransport"/> from an
+    /// advertised device name (e.g. <c>"B1 Pro"</c>). The returned client owns and disposes that
+    /// transport (ownership follows creation, spec §5.1). Throws
+    /// <see cref="PlatformNotSupportedException"/> off macOS.
+    /// </summary>
+    [System.Runtime.Versioning.SupportedOSPlatform("macos")]
+    public static NiimbotClient FromBleDevice(string deviceName) =>
+        new(new Transport.MacBleTransport(deviceName), ownsTransport: true);
+
     /// <summary>The active printer profile, resolved on connect.</summary>
     public PrinterProfile? Profile { get; private set; }
 

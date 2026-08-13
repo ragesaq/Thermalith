@@ -3,13 +3,17 @@
 // identification before committing paper, and capture raw TX/RX bytes (the spec's tiebreaker, §5/§10).
 //
 //   print-harness probe                 Enumerate + probe ports for a NIIMBOT (safe; default)
-//   print-harness info       [--port X] Connect, show capabilities + status, disconnect (no print)
-//   print-harness status     [--port X] Connect and read printer status
-//   print-harness test-page  [--port X] Print the printer's built-in self-test (safest first print)
-//   print-harness print      [--port X] Print the hardcoded test bitmap
+//   print-harness scan                  List advertising BLE peripherals (macOS only; safe)
+//   print-harness info       [--port X | --ble NAME] Connect, show capabilities + status (no print)
+//   print-harness status     [--port X | --ble NAME] Connect and read printer status
+//   print-harness test-page  [--port X | --ble NAME] Print the built-in self-test (safest first print)
+//   print-harness print      [--port X | --ble NAME] Print the hardcoded test bitmap
 //   print-harness encode                Encode the test bitmap offline (no device)
 //
-// Options: --port <name> --baud <n> --density <1-5> --copies <n> --log <file> --yes --no-color
+// Options: --port <name> --ble <device-name> --baud <n> --density <1-5> --copies <n> --log <file>
+//          --yes --no-color
+// BLE (--ble / scan) rides the same client over MacBleTransport — macOS only for now (spec §5.1,
+// upstream issue #13); serial stays the default everywhere else.
 
 using Niimbot.Net;
 using Niimbot.Net.Encoding;
@@ -18,6 +22,7 @@ using Thermalith.PrintHarness;
 
 var command = args.FirstOrDefault(a => !a.StartsWith('-'))?.ToLowerInvariant() ?? "probe";
 var port = GetOption(args, "--port");
+var bleName = GetOption(args, "--ble");
 var baud = int.TryParse(GetOption(args, "--baud"), out var b) ? b : SerialTransport.DefaultBaudRate;
 var logFile = GetOption(args, "--log");
 var assumeYes = args.Contains("--yes");
@@ -46,6 +51,7 @@ try
     return command switch
     {
         "probe" => await ProbeCommand(cts.Token),
+        "scan" => await ScanCommand(cts.Token),
         "encode" => EncodeCommand(),
         "info" => await ConnectCommand(print: PrintMode.None, cts.Token),
         "status" => await ConnectCommand(print: PrintMode.None, cts.Token, statusOnly: true),
@@ -104,16 +110,56 @@ int EncodeCommand()
     return 0;
 }
 
+async Task<int> ScanCommand(CancellationToken ct)
+{
+    if (!MacBleTransport.IsSupported)
+    {
+        Console.WriteLine("BLE scan is macOS-only for now (MacBleTransport / CoreBluetooth).");
+        return 1;
+    }
+
+    Console.WriteLine("Scanning for BLE peripherals (8 s)…");
+    var names = await MacBleTransport.ScanAsync(TimeSpan.FromSeconds(8), ct);
+    if (names.Count == 0)
+    {
+        Console.WriteLine("No advertising BLE peripherals seen. Is the printer on? (NIIMBOTs advertise " +
+                          "as e.g. \"B1 Pro-XXXXXX\".)");
+        return 0;
+    }
+
+    foreach (var name in names)
+        Console.WriteLine($"  {name}");
+    Console.WriteLine($"\nNext: `print-harness info --ble \"<name>\"` (a distinctive substring works).");
+    return 0;
+}
+
 async Task<int> ConnectCommand(PrintMode print, CancellationToken ct, bool statusOnly = false)
 {
-    var target = port ?? await ResolvePort(ct);
-    if (target is null)
-        return 1;
+    INiimbotTransport inner;
+    string targetLabel;
+    if (bleName is not null)
+    {
+        if (!MacBleTransport.IsSupported)
+        {
+            Console.WriteLine("--ble is macOS-only for now (MacBleTransport / CoreBluetooth).");
+            return 1;
+        }
+        inner = new MacBleTransport(bleName);
+        targetLabel = $"BLE \"{bleName}\"";
+    }
+    else
+    {
+        var target = port ?? await ResolvePort(ct);
+        if (target is null)
+            return 1;
+        inner = new SerialTransport(target, baud);
+        targetLabel = $"{target} @ {baud} baud";
+    }
 
-    INiimbotTransport transport = new CaptureTransport(new SerialTransport(target, baud), log.Sink);
+    INiimbotTransport transport = new CaptureTransport(inner, log.Sink);
     await using var client = new NiimbotClient(transport, ownsTransport: true);
 
-    Console.WriteLine($"Connecting to {target} @ {baud} baud…");
+    Console.WriteLine($"Connecting to {targetLabel}…");
     var caps = await client.ConnectAsync(ct);
 
     if (!statusOnly)
