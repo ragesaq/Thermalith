@@ -7,5 +7,4 @@ are never edited or removed.
 
 Format: `- YYYY-MM-DD — what was finished [node-id] (PR #n or commit <sha>)`
 
-(No entries yet — ragesaq-001 moves here once the fork exists on GitHub and
-main is pushed.)
+- 2026-08-13 — Fork stood up: ragesaq/Thermalith created, remotes + ragesaq identity set, AGENTS.md rulebook and .agents/ memory system committed and pushed to fork main [ragesaq-001] (commit 66f3d13)

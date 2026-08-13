@@ -9,16 +9,26 @@
     "Update 'status', 'next', and 'updated' in the same commit as the work, and at the end of every working session.",
     "Run python3 .agents/check_tracking.py before committing changes here or to the ledger."
   ],
-  "statuses": ["idea", "active", "waiting", "review", "done", "parked"],
+  "statuses": [
+    "idea",
+    "active",
+    "waiting",
+    "review",
+    "done",
+    "parked"
+  ],
   "nodes": [
     {
       "id": "ragesaq-001",
       "title": "Stand up the fork: remotes, identity, baseline agent docs + memory system",
       "owner": "ragesaq",
-      "status": "waiting",
+      "status": "done",
       "needs": [],
-      "next": "Clone, remotes (origin=ragesaq fork, upstream=EvilGeniusLabs-ca), ragesaq commit identity, AGENTS.md + .agents/ tracking set are all done locally. BLOCKED on the fork existing at github.com/ragesaq/Thermalith: no ragesaq API credential on this host, so ragesaq must click Fork on the upstream repo (or provide a ragesaq PAT). Then: git push -u origin main, flip this node to done, add the ledger line.",
-      "links": ["AGENTS.md", ".agents/"],
+      "next": "Done: fork created by ragesaq, main pushed (66f3d13). Follow-on work continues in ragesaq-002 (printer channel) and ragesaq-003 (BLE stack choice).",
+      "links": [
+        "AGENTS.md",
+        ".agents/"
+      ],
       "updated": "2026-08-13"
     },
     {
@@ -27,8 +37,11 @@
       "owner": "ragesaq",
       "status": "active",
       "needs": [],
-      "next": "Ask ragesaq for the printer model (or read it off the device / vendor app). Then check it against issue #13's framing: newer models are BLE-only (SPP port present but silent — B3S confirmed case). If the model speaks classic SPP, wireless printing may already work via the existing SerialTransport over an OS rfcomm/serial binding — test that first with tools/print-harness before writing any code. Record model, channel findings, and probe output here.",
-      "links": ["https://github.com/EvilGeniusLabs-ca/Thermalith/issues/13", "tools/print-harness"],
+      "next": "Ask ragesaq for the printer model (or read it off the device / vendor app). Then check it against issue #13's framing: newer models are BLE-only (SPP port present but silent \u2014 B3S confirmed case). If the model speaks classic SPP, wireless printing may already work via the existing SerialTransport over an OS rfcomm/serial binding \u2014 test that first with tools/print-harness before writing any code. Record model, channel findings, and probe output here.",
+      "links": [
+        "https://github.com/EvilGeniusLabs-ca/Thermalith/issues/13",
+        "tools/print-harness"
+      ],
       "updated": "2026-08-13"
     },
     {
@@ -38,7 +51,10 @@
       "status": "idea",
       "needs": [],
       "next": "Survey candidates named in issue #13: per-OS native (WinRT / CoreBluetooth / BlueZ D-Bus), InTheHand.BluetoothLE, Plugin.BLE. Evaluate: desktop support on Win/macOS/Linux, GPL compatibility, maintenance health, headless friendliness. Study niimblue-node's BLE handling (notify/write + frame reassembly) as the byte-accurate reference. Write the comparison into DECISIONS.json as a proposed decision before coding.",
-      "links": ["https://github.com/MultiMote/niimblue-node", "https://github.com/MultiMote/niimbluelib"],
+      "links": [
+        "https://github.com/MultiMote/niimblue-node",
+        "https://github.com/MultiMote/niimbluelib"
+      ],
       "updated": "2026-08-13"
     },
     {
@@ -46,9 +62,15 @@
       "title": "Implement BleTransport behind INiimbotTransport in Niimbot.Net",
       "owner": "ragesaq",
       "status": "idea",
-      "needs": ["ragesaq-002", "ragesaq-003"],
+      "needs": [
+        "ragesaq-002",
+        "ragesaq-003"
+      ],
       "next": "Branch from upstream/main. New transport: GATT discovery (service e7810a71-73ae-499d-8c15-faa9aef0c3f2 / characteristic bef8d6c9-9c21-4c9e-b632-bd58c1009f9f, fallback discovery rule: long-UUID service with NOTIFY + WRITE_NO_RESPONSE characteristic), subscribe notifications, write-without-response, reassemble 55 55 ... AA AA frames fragmented across notifications (buffer in transport). macOS quirk: connect by device name. Unit-test fragmentation reassembly with a replay transport. Verify on real hardware via print-harness, then full app print path.",
-      "links": ["src/Niimbot.Net/INiimbotTransport.cs", "Documentation/thermalith-build-spec.md"],
+      "links": [
+        "src/Niimbot.Net/INiimbotTransport.cs",
+        "Documentation/thermalith-build-spec.md"
+      ],
       "updated": "2026-08-13"
     },
     {
@@ -56,9 +78,13 @@
       "title": "Upstream PR: BLE transport (closes upstream #13)",
       "owner": "ragesaq",
       "status": "idea",
-      "needs": ["ragesaq-004"],
+      "needs": [
+        "ragesaq-004"
+      ],
       "next": "One logical PR from a branch off upstream/main: transport + tests + a hardware test report (model, OS, log) in the PR body. All commits DCO-signed (git commit -s). Reference issue #13 and note which reference implementations informed the port. Expect maintainer to land it into GitLab; do not merge.",
-      "links": ["CONTRIBUTING.md"],
+      "links": [
+        "CONTRIBUTING.md"
+      ],
       "updated": "2026-08-13"
     }
   ]
