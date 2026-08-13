@@ -40,7 +40,8 @@
       "title": "BLE stack: per-OS native transports; macOS first via direct CoreBluetooth ObjC interop",
       "decision": "No cross-platform .NET BLE library works for a plain net10.0 desktop app: InTheHand.BluetoothLE 4.0.44 and Plugin.BLE 3.2.1 both ship macOS support only as net*-maccatalyst TFMs (verified from the nupkgs), useless to Thermalith's plain-TFM Avalonia app; SimpleBLE left MIT for a restrictive license (GPL-incompatible for redistribution) and has no .NET binding. Therefore: implement per-OS BLE transports behind INiimbotTransport with runtime OS selection. macOS ships first (ragesaq's platform): direct CoreBluetooth interop in pure C# via libobjc P/Invoke (objc_msgSend, objc_allocateClassPair + [UnmanagedCallersOnly] for the CBCentralManager/CBPeripheral delegates, libdispatch serial queue). No new native binaries, no TFM changes, preserves upstream's self-contained single-file story. Windows follows via CsWinRT (needs a net10.0-windows multi-target), Linux via BlueZ D-Bus (MIT libs exist).",
       "why": "This resolves issue #13's 'one real open decision' with package-verified evidence. The interop surface needed is small (scan, connect, discover, notify-subscribe, write-without-response) and the pattern has prior art in Avalonia's own managed ObjC layer.",
-      "status": "proposed"
+      "status": "accepted",
+      "acceptedBy": "ragesaq, 2026-08-13"
     }
   ]
 }

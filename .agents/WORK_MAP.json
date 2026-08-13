@@ -48,9 +48,9 @@
       "id": "ragesaq-003",
       "title": "Choose the .NET cross-platform BLE stack (issue #13's 'one real open decision')",
       "owner": "ragesaq",
-      "status": "review",
+      "status": "done",
       "needs": [],
-      "next": "Survey DONE, decision PROPOSED as D-005 (per-OS transports; macOS-first via pure-C# CoreBluetooth ObjC interop). Evidence: InTheHand.BluetoothLE 4.0.44 + Plugin.BLE 3.2.1 nupkg TFM lists show maccatalyst-only mac support; SimpleBLE license is GPL-incompatible now. Awaiting ragesaq acceptance; on accept flip D-005 to accepted, this node to done + ledger line, and consider posting the findings as a comment on upstream issue #13 to get maintainer buy-in before the PR.",
+      "next": "Done: D-005 accepted by ragesaq 2026-08-13. Implementation proceeds in ragesaq-004. Posting the survey findings to upstream issue #13 remains a good pre-PR step (folded into ragesaq-005 prep).",
       "links": [
         "https://github.com/MultiMote/niimblue-node",
         "https://github.com/MultiMote/niimbluelib"
@@ -61,7 +61,7 @@
       "id": "ragesaq-004",
       "title": "Implement BleTransport behind INiimbotTransport in Niimbot.Net",
       "owner": "ragesaq",
-      "status": "idea",
+      "status": "active",
       "needs": [
         "ragesaq-002",
         "ragesaq-003"
