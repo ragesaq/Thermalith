@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "aistart.artifacts/v1",
+  "about": "Registry of durable references. Add an entry when a source becomes load-bearing for the work; never delete, mark superseded instead.",
+  "artifacts": [
+    {
+      "id": "A-001",
+      "title": "Upstream issue #13 — BLE transport spec (the plan of record for the first target)",
+      "ref": "https://github.com/EvilGeniusLabs-ca/Thermalith/issues/13",
+      "notes": "Maintainer-written scope: transport-only, GATT UUIDs (service e7810a71-73ae-499d-8c15-faa9aef0c3f2, characteristic bef8d6c9-9c21-4c9e-b632-bd58c1009f9f), fragmentation reassembly requirement, macOS connect-by-name quirk, candidate .NET BLE stacks, reference implementations."
+    },
+    {
+      "id": "A-002",
+      "title": "INiimbotTransport — the seam BLE plugs into",
+      "ref": "src/Niimbot.Net/INiimbotTransport.cs",
+      "notes": "Dumb async byte duplex; framing/correlation/RLE live above it. See also Documentation/thermalith-build-spec.md section 5.1."
+    },
+    {
+      "id": "A-003",
+      "title": "Reference implementations for the BLE port",
+      "ref": "https://github.com/MultiMote/niimblue-node",
+      "notes": "niimblue-node (closest: non-browser BLE+serial, fragment handling); niimbluelib (protocol reference Niimbot.Net tracks); labbots/NiimPrintX (Python GATT, pooling+reconnect); AndBondStyle/niimprint (Python, transport-abstracted); community wiki https://printers.niim.blue/interfacing/connecting/ for UUID discovery rules."
+    },
+    {
+      "id": "A-004",
+      "title": "Upstream contribution flow",
+      "ref": "CONTRIBUTING.md",
+      "notes": "GitHub repo is a one-way mirror of self-hosted GitLab. Fork mirror -> DCO-signed commits -> PR on GitHub -> maintainer lands into GitLab with authorship preserved -> mirror syncs back, PR closed with pointer."
+    },
+    {
+      "id": "A-005",
+      "title": "AIStart hub — source of the memory/handoff pattern",
+      "ref": "/srv/codex/repo/aistart (PsiClawOps/AIStarterKit)",
+      "notes": "Pattern origin: AGENTS.md rulebook + work map + append-only ledger; solo five-file variant per docs/proposals/2026-08-04-fleet-adoption-and-standardization.md (2026-08-05 amendment)."
+    },
+    {
+      "id": "A-006",
+      "title": "tools/print-harness — hardware bring-up probe",
+      "ref": "tools/print-harness",
+      "notes": "Console probe/print tool; use for channel confirmation (ragesaq-002) and first real-hardware BLE verification (ragesaq-004)."
+    }
+  ]
+}

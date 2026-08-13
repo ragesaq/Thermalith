@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "aistart.goal/v1",
+  "owner": "ragesaq",
+  "project": "thermalith-fork",
+  "objective": "Print to ragesaq's NIIMBOT printer over Bluetooth directly from Thermalith — a real driver-style transport, replacing dependence on the vendor phone app — and contribute that capability (and follow-on enhancements) upstream as PRs.",
+  "firstTarget": "BLE implementation of INiimbotTransport in Niimbot.Net, per upstream issue #13.",
+  "successCriteria": [
+    "Thermalith discovers, connects to, and prints on ragesaq's NIIMBOT printer over Bluetooth end-to-end (design -> render -> print), no vendor app involved.",
+    "The transport is a clean INiimbotTransport implementation: framing/commands/client untouched; works on at least the desktop OS ragesaq uses, with a credible cross-platform story.",
+    "The work is accepted upstream (PR merged into the GitLab upstream via the GitHub mirror flow) or is in active upstream review with maintainer engagement.",
+    "Every session leaves .agents/ memory current enough that a cold session can resume without chat history."
+  ],
+  "constraints": [
+    "Upstream-first: match upstream conventions (CONTRIBUTING.md, CLAUDE.md architecture notes); one logical change per PR; DCO sign-off on every upstream-bound commit.",
+    "GPL-3.0-or-later inbound=outbound; porting logic from MIT-licensed reference implementations is OK with provenance noted.",
+    "Fork main carries meta files (AGENTS.md, .agents/); PR branches start from upstream/main so meta never leaks into PRs.",
+    "Commit identity in this fork is ragesaq only."
+  ],
+  "mustNever": [
+    "Push to the upstream remote.",
+    "Commit as any identity other than ragesaq in this fork.",
+    "Edit upstream-owned files (e.g. CLAUDE.md) in fork-meta commits.",
+    "Merge PRs — the upstream maintainer lands all changes."
+  ]
+}

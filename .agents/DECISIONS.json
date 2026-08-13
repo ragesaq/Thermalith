@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "aistart.decisions/v1",
+  "about": "Append-only decision log. Never rewrite an entry; supersede with a new one that names the old id.",
+  "decisions": [
+    {
+      "id": "D-001",
+      "date": "2026-08-13",
+      "title": "Adopt the AIStart repo-starter-solo memory pattern for this fork",
+      "decision": "Agent memory is the five-file tracking set (GOAL.json, WORK_MAP.json, DECISIONS.json, ARTIFACTS.json, WORK_LEDGER.md) under .agents/, plus check_tracking.py. Handoff information flows through WORK_MAP node 'next' fields (in-flight) and WORK_LEDGER lines (finished): a cold session resumes from those two files alone.",
+      "why": "Matches the locked AIStart fleet-adoption design (hub docs/proposals/2026-08-04, amendment 2026-08-05); plain files, harness-neutral, append-mostly.",
+      "status": "accepted"
+    },
+    {
+      "id": "D-002",
+      "date": "2026-08-13",
+      "title": "Branch discipline: meta on fork main, PR branches from upstream/main",
+      "decision": "Fork main = upstream main + meta commits (AGENTS.md, .agents/). Every upstream-bound branch starts from upstream/main so PRs never contain meta files. Main syncs by rebasing meta commits onto upstream/main.",
+      "why": "Upstream is a one-way GitLab->GitHub mirror; the maintainer cherry-lands PR commits. Clean single-topic PRs are the only ones that can land.",
+      "status": "accepted"
+    },
+    {
+      "id": "D-003",
+      "date": "2026-08-13",
+      "title": "Commit identity: ragesaq with DCO sign-off",
+      "decision": "All commits in this fork are ragesaq <11304287+ragesaq@users.noreply.github.com>, set repo-locally. Upstream-bound commits add Signed-off-by via git commit -s. No Caliper/PsiClawOps identity in this repo.",
+      "why": "Public personal-account contribution; upstream CONTRIBUTING.md requires DCO. Mirrors the openclaw/* personal-identity carve-out in the operator's global policy.",
+      "status": "accepted"
+    },
+    {
+      "id": "D-004",
+      "date": "2026-08-13",
+      "title": "BLE lands as a transport-only addition behind INiimbotTransport",
+      "decision": "The Bluetooth work implements INiimbotTransport (build spec section 5.1) and touches nothing in framing, commands, or client layers. The .NET BLE stack choice is open (tracked as ragesaq-003) and gets its own decision entry before coding.",
+      "why": "This is exactly how upstream issue #13 scopes the work; maximizes the chance the PR lands as-is.",
+      "status": "accepted"
+    }
+  ]
+}
